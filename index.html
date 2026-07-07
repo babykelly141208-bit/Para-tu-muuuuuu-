@@ -1,1 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Un pequeño mundo para ti</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+background:#000;
+overflow:hidden;
+color:white;
+}
+
+#inicio{
+position:fixed;
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+background:black;
+text-align:center;
+padding:30px;
+animation:aparecer 2s;
+}
+
+h1{
+font-size:32px;
+margin-bottom:20px;
+}
+
+p{
+max-width:500px;
+font-size:18px;
+line-height:1.6;
+opacity:.8;
+}
+
+button{
+margin-top:40px;
+padding:15px 35px;
+border:none;
+border-radius:30px;
+background:white;
+color:black;
+font-size:18px;
+cursor:pointer;
+}
+
+#juego{
+display:none;
+width:100vw;
+height:100vh;
+background:#000;
+position:relative;
+overflow:hidden;
+}
+
+#moto{
+position:absolute;
+left:40px;
+bottom:80px;
+font-size:50px;
+transition:.15s;
+}
+
+.frase{
+position:absolute;
+color:white;
+font-size:20px;
+opacity:0;
+animation:flotar 6s forwards;
+}
+
+@keyframes flotar{
+
+0%{
+opacity:0;
+transform:translateY(30px);
+}
+
+30%{
+opacity:1;
+}
+
+100%{
+opacity:0;
+transform:translateY(-80px);
+}
+
+}
+
+@keyframes aparecer{
+
+from{
+opacity:0;
+}
+
+to{
+opacity:1;
+}
+
+}
+
+#joystick{
+position:absolute;
+bottom:30px;
+left:20px;
+width:120px;
+height:120px;
+border-radius:50%;
+border:2px solid white;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:50px;
+opacity:.6;
+}
+
+#album{
+position:absolute;
+top:15px;
+right:15px;
+background:#111;
+padding:10px;
+border-radius:12px;
+font-size:14px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="inicio">
+
+<h1>🌙 Un pequeño mundo para ti</h1>
+
+<p>
+Hay personas que llegan a nuestra vida sin saber
+que se convierten en un lugar seguro.
+</p>
+
+<button onclick="comenzar()">
+Comenzar 🏍️
+</button>
+
+</div>
+
+<div id="juego">
+
+<div id="album">
+📖 Frases encontradas:
+<span id="contador">0</span>
+</div>
+
+<div id="moto">
+🏍️
+</div>
+
+<div id="joystick">
+⬅️➡️
+</div>
+
+</div>
+
+<script>
+
+let frases=[
+"Tan lindo ❤️",
+"Qué lindos ojos ✨",
+"Eres maravilloso",
+"Estoy orgullosa de ti",
+"Gracias por existir",
+"Nunca dudes de ti",
+"Ojalá pudieras verte con mis ojos",
+"Te amo ❤️"
+];
+
+let encontradas=0;
+
+function comenzar(){
+
+document.getElementById("inicio").style.display="none";
+
+document.getElementById("juego").style.display="block";
+
+setInterval(crearFrase,2500);
+
+}
+
+function crearFrase(){
+
+let frase=document.createElement("div");
+
+frase.className="frase";
+
+frase.innerHTML=frases[Math.floor(Math.random()*frases.length)];
+
+frase.style.left=Math.random()*80+10+"vw";
+
+frase.style.top=Math.random()*70+10+"vh";
+
+document.getElementById("juego").appendChild(frase);
+
+encontradas++;
+
+document.getElementById("contador").innerHTML=encontradas;
+
+setTimeout(()=>{
+
+frase.remove();
+
+},6000);
+
+}
+
+</script>
+
+</body>
+  </html>
