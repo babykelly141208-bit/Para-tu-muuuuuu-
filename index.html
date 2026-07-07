@@ -1,231 +1,403 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Un pequeño mundo para ti</title>
-
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, sans-serif;
-}
-
-body{
-background:#000;
-overflow:hidden;
-color:white;
-}
-
-#inicio{
-position:fixed;
-width:100%;
-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-background:black;
-text-align:center;
-padding:30px;
-animation:aparecer 2s;
-}
-
-h1{
-font-size:32px;
-margin-bottom:20px;
-}
-
-p{
-max-width:500px;
-font-size:18px;
-line-height:1.6;
-opacity:.8;
-}
-
-button{
-margin-top:40px;
-padding:15px 35px;
-border:none;
-border-radius:30px;
-background:white;
-color:black;
-font-size:18px;
-cursor:pointer;
-}
-
-#juego{
-display:none;
-width:100vw;
-height:100vh;
-background:#000;
-position:relative;
-overflow:hidden;
-}
-
-#moto{
-position:absolute;
-left:40px;
-bottom:80px;
-font-size:50px;
-transition:.15s;
-}
-
-.frase{
-position:absolute;
-color:white;
-font-size:20px;
-opacity:0;
-animation:flotar 6s forwards;
-}
-
-@keyframes flotar{
-
-0%{
-opacity:0;
-transform:translateY(30px);
-}
-
-30%{
-opacity:1;
-}
-
-100%{
-opacity:0;
-transform:translateY(-80px);
-}
-
-}
-
-@keyframes aparecer{
-
-from{
-opacity:0;
-}
-
-to{
-opacity:1;
-}
-
-}
-
-#joystick{
-position:absolute;
-bottom:30px;
-left:20px;
-width:120px;
-height:120px;
-border-radius:50%;
-border:2px solid white;
-display:flex;
-justify-content:center;
-align-items:center;
-font-size:50px;
-opacity:.6;
-}
-
-#album{
-position:absolute;
-top:15px;
-right:15px;
-background:#111;
-padding:10px;
-border-radius:12px;
-font-size:14px;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Para ti ❤️</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            background: linear-gradient(to bottom, #0b001a, #1f003d);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+        }
+        /* Estrellas parpadeantes */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 60%;
+            background-image: radial-gradient(white 1px, transparent 0);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+        /* Escenario */
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #world {
+            position: absolute;
+            bottom: 150px;
+            left: 0;
+            width: 5000px; /* Espacio largo para avanzar */
+            height: 200px;
+            transition: transform 0.1s linear;
+        }
+        /* Carretera */
+        .road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: #333;
+            border-top: 4px solid #fff;
+        }
+        .road-lines {
+            width: 100%;
+            height: 2px;
+            border-top: 2px dashed #fff;
+            margin-top: 18px;
+            opacity: 0.7;
+        }
+        /* Elementos del mapa */
+        .house {
+            position: absolute;
+            bottom: 35px;
+            left: 2800px;
+            font-size: 90px;
+            cursor: pointer;
+            z-index: 5;
+        }
+        .heart-pickup {
+            position: absolute;
+            bottom: 60px;
+            font-size: 24px;
+            animation: float 2s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        /* Personaje (Niño en moto) */
+        #player {
+            position: absolute;
+            bottom: 145px;
+            left: 50px;
+            font-size: 55px;
+            z-index: 10;
+            transform: scaleX(-1); /* Voltear para que vea a la derecha */
+            transition: bottom 0.1s ease;
+        }
+        /* Interfaz y Contador */
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 18px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+        /* Cuadro de Frases Dinámicas */
+        #text-bubble {
+            position: fixed;
+            top: 100px;
+            left: 5%;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-size: 16px;
+            transition: opacity 0.3s;
+            opacity: 0;
+            z-index: 100;
+        }
+        #text-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.95) transparent;
+        }
+        /* Controles Táctiles (Joystick) */
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        #joystick {
+            width: 60px;
+            height: 60px;
+            background: #ff4a7d;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            touch-action: none;
+        }
+        /* Ventana de la Carta Final */
+        #modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 200;
+            padding: 20px;
+        }
+        #modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .envelope-wrapper {
+            background: #fff;
+            padding: 30px 20px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transform: scale(0.7);
+            transition: transform 0.5s ease;
+        }
+        #modal.active .envelope-wrapper {
+            transform: scale(1);
+        }
+        .letter-content {
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 20px;
+            text-align: left;
+            padding-right: 5px;
+        }
+        .close-btn {
+            background: #ff4a7d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        /* Indicador de destino */
+        #hint {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="inicio">
+    <div id="game-container">
+        <div class="stars"></div>
+        
+        <div id="ui">❤️ Corazones: <span id="score">0</span></div>
+        <div id="text-bubble">¡Usa el joystick rosa para avanzar hacia la derecha! 🏍️💨</div>
+        <div id="hint">Avanza a la derecha 👉</div>
 
-<h1>🌙 Un pequeño mundo para ti</h1>
+        <div id="world">
+            <!-- Carretera continua -->
+            <div class="road"><div class="road-lines"></div></div>
+            <!-- Casita al final -->
+            <div class="house" id="target-house" onclick="openLetter()">🏡</div>
+        </div>
 
-<p>
-Hay personas que llegan a nuestra vida sin saber
-que se convierten en un lugar seguro.
-</p>
+        <!-- Personaje principal -->
+        <div id="player">🏍️</div>
+    </div>
 
-<button onclick="comenzar()">
-Comenzar 🏍️
-</button>
+    <!-- Control Joystick -->
+    <div id="controls">
+        <div id="joystick"></div>
+    </div>
 
-</div>
+    <!-- Modal con la carta romántica -->
+    <div id="modal" id="letter-modal">
+        <div class="envelope-wrapper">
+            <h3 style="color: #ff4a7d; margin-bottom: 15px;">💌 Una cartita para ti</h3>
+            <div class="letter-content">
+                <p>¡Llegaste al final del camino! 💖</p><br>
+                <p>Quería darte una sorpresa especial y diferente. Cada pasito que diste en la moto representa lo lindo que es avanzar y construir momentos juntos.</p><br>
+                <p>Gracias por estar en mi vida, por tus sonrisas, tus mensajitos y por ser esa personita tan increíble que me alegra los días por completo. Eres mi lugar favorito. ✨</p><br>
+                <p>Te quiero muchísimo, ¡gracias por jugar! mi corazoncito es todo tuyo. 🧸❤️</p>
+            </div>
+            <button class="close-btn" onclick="closeLetter()">Cerrar con amor</button>
+        </div>
+    </div>
 
-<div id="juego">
+    <script>
+        const world = document.getElementById('world');
+        const player = document.getElementById('player');
+        const joystick = document.getElementById('joystick');
+        const joystickArea = document.getElementById('controls');
+        const scoreElement = document.getElementById('score');
+        const textBubble = document.getElementById('text-bubble');
+        const modal = document.getElementById('modal');
 
-<div id="album">
-📖 Frases encontradas:
-<span id="contador">0</span>
-</div>
+        let posX = 0;
+        let targetPosX = 0;
+        let score = 0;
+        let isMoving = false;
+        let speed = 0;
 
-<div id="moto">
-🏍️
-</div>
+        // Lista de frases románticas que aparecen en el camino
+        const phrases = [
+            "¡Arrancamos este viaje! Cada metro contigo es único... 🥰",
+            "Me encantas más de lo que te imaginas. 💖",
+            "Eres mi pensamiento favorito en todo el día. 💭✨",
+            "Contigo el camino siempre es más bonito. 🛣️❤️",
+            "¿Ya te dije hoy lo especial que eres para mí? 🥺",
+            "Coleccionando corazones... ¡como los momentos bellos a tu lado! 🧸",
+            "¡Ya casi llegas a la casita sorpresa! Mantén el rumbo. 🏡☀️",
+            "¡Toca la casa para abrir tu regalo! ✉️💘"
+        ];
 
-<div id="joystick">
-⬅️➡️
-</div>
+        // Generar corazones aleatorios en el camino
+        const worldWidth = 3000;
+        for (let i = 300; i < 2600; i += 300) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-pickup';
+            heart.innerHTML = '❤️';
+            heart.style.left = `${i}px`;
+            world.appendChild(heart);
+        }
 
-</div>
+        // Sistema del Joystick Táctil
+        let startX = 0;
+        const maxDistance = 40;
 
-<script>
+        joystick.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isMoving = true;
+        });
 
-let frases=[
-"Tan lindo ❤️",
-"Qué lindos ojos ✨",
-"Eres maravilloso",
-"Estoy orgullosa de ti",
-"Gracias por existir",
-"Nunca dudes de ti",
-"Ojalá pudieras verte con mis ojos",
-"Te amo ❤️"
-];
+        joystick.addEventListener('touchmove', (e) => {
+            if (!isMoving) return;
+            let currentX = e.touches[0].clientX;
+            let diffX = currentX - startX;
 
-let encontradas=0;
+            // Limitar movimiento visual del joystick
+            if (diffX > maxDistance) diffX = maxDistance;
+            if (diffX < -maxDistance) diffX = -maxDistance;
 
-function comenzar(){
+            joystick.style.transform = `translateX(${diffX}px)`;
 
-document.getElementById("inicio").style.display="none";
+            // Calcular velocidad basándose en el joystick (Mover a la derecha)
+            if (diffX > 10) {
+                speed = (diffX / maxDistance) * 12; // Velocidad hacia adelante
+                player.style.transform = "scaleX(-1)"; // Mira a la derecha
+            } else if (diffX < -10) {
+                speed = (diffX / maxDistance) * 8; // Reversa un poco más lenta
+                player.style.transform = "scaleX(1)"; // Mira a la izquierda
+            } else {
+                speed = 0;
+            }
+        });
 
-document.getElementById("juego").style.display="block";
+        joystick.addEventListener('touchend', () => {
+            isMoving = false;
+            speed = 0;
+            joystick.style.transform = `translateX(0px)`;
+        });
 
-setInterval(crearFrase,2500);
+        // Bucle principal del juego
+        function updateGame() {
+            if (speed !== 0) {
+                targetPosX += speed;
+                
+                // Límites del mapa
+                if (targetPosX < 0) targetPosX = 0;
+                if (targetPosX > 2800) targetPosX = 2800;
+            }
 
-}
+            // Suavizado de la cámara
+            posX += (targetPosX - posX) * 0.1;
+            world.style.transform = `translateX(${-posX}px)`;
 
-function crearFrase(){
+            // Animación de rebote sutil en la moto al avanzar
+            if (Math.abs(speed) > 0.5) {
+                player.style.bottom = `${145 + Math.sin(Date.now() / 50) * 3}px`;
+            } else {
+                player.style.bottom = '145px';
+            }
 
-let frase=document.createElement("div");
+            // Revisar colisión con corazones
+            const hearts = document.querySelectorAll('.heart-pickup');
+            hearts.forEach(heart => {
+                const heartX = parseInt(heart.style.left);
+                // Si el jugador pasa cerca del corazón y no ha sido recolectado
+                if (Math.abs((posX + 70) - heartX) < 40 && heart.style.display !== 'none') {
+                    heart.style.display = 'none';
+                    score++;
+                    scoreElement.innerText = score;
+                    
+                    // Hacer aparecer burbuja con efecto divertido
+                    player.style.bottom = '160px'; // Brinquito
+                }
+            });
 
-frase.className="frase";
+            // Cambiar frases dinámicamente según la distancia recorrida
+            const phraseIndex = Math.min(Math.floor(posX / 360), phrases.length - 1);
+            if(textBubble.innerText !== phrases[phraseIndex]) {
+                textBubble.style.opacity = 0;
+                setTimeout(() => {
+                    textBubble.innerText = phrases[phraseIndex];
+                    textBubble.style.opacity = 1;
+                }, 200);
+            }
 
-frase.innerHTML=frases[Math.floor(Math.random()*frases.length)];
+            requestAnimationFrame(updateGame);
+        }
 
-frase.style.left=Math.random()*80+10+"vw";
+        // Iniciar ciclo
+        textBubble.style.opacity = 1;
+        requestAnimationFrame(updateGame);
 
-frase.style.top=Math.random()*70+10+"vh";
+        // Funciones de la Carta
+        function openLetter() {
+            modal.classList.add('active');
+        }
 
-document.getElementById("juego").appendChild(frase);
-
-encontradas++;
-
-document.getElementById("contador").innerHTML=encontradas;
-
-setTimeout(()=>{
-
-frase.remove();
-
-},6000);
-
-}
-
-</script>
-
+        function closeLetter() {
+            modal.classList.remove('active');
+        }
+    </script>
 </body>
-  </html>
+              </html>
+              
