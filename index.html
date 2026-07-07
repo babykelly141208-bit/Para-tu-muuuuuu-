@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Para ti ❤️</title>
+    <title>Para ti ❤️ Carrerita</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,67 +13,40 @@
             -webkit-user-select: none;
         }
         body {
-            background: linear-gradient(to bottom, #0b001a, #1f003d);
+            background-color: #333; /* Color del asfalto */
             overflow: hidden;
             font-family: 'Arial', sans-serif;
             height: 100vh;
         }
-        /* Estrellas parpadeantes */
-        .stars {
-            position: absolute;
-            width: 100%;
-            height: 60%;
-            background-image: radial-gradient(white 1px, transparent 0);
-            background-size: 40px 40px;
-            opacity: 0.5;
-            animation: twinkle 3s infinite ease-in-out;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.7; }
-        }
-        /* Escenario */
+        /* Escenario de la carretera */
         #game-container {
             position: relative;
             width: 100%;
             height: 100vh;
+            background: repeating-linear-gradient(
+                to bottom,
+                #333 0%,
+                #333 40%,
+                #fff 40%,
+                #fff 60%,
+                #333 60%,
+                #333 100%
+            );
+            background-size: 100% 100px; /* Tamaño de las líneas de la carretera */
+            animation: moveRoad 1s linear infinite; /* Animación para simular movimiento */
         }
-        #world {
-            position: absolute;
-            bottom: 150px;
-            left: 0;
-            width: 5000px; /* Espacio largo para avanzar */
-            height: 200px;
-            transition: transform 0.1s linear;
-        }
-        /* Carretera */
-        .road {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 40px;
-            background: #333;
-            border-top: 4px solid #fff;
-        }
-        .road-lines {
-            width: 100%;
-            height: 2px;
-            border-top: 2px dashed #fff;
-            margin-top: 18px;
-            opacity: 0.7;
+        @keyframes moveRoad {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
         }
         /* Elementos del mapa */
-        .house {
+        .car {
             position: absolute;
-            bottom: 35px;
-            left: 2800px;
-            font-size: 90px;
-            cursor: pointer;
+            font-size: 40px;
             z-index: 5;
         }
         .heart-pickup {
             position: absolute;
-            bottom: 60px;
             font-size: 24px;
             animation: float 2s infinite ease-in-out;
         }
@@ -81,15 +54,15 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        /* Personaje (Niño en moto) */
+        /* Personaje principal */
         #player {
             position: absolute;
-            bottom: 145px;
-            left: 50px;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 55px;
             z-index: 10;
-            transform: scaleX(-1); /* Voltear para que vea a la derecha */
-            transition: bottom 0.1s ease;
+            transition: left 0.1s ease;
         }
         /* Interfaz y Contador */
         #ui {
@@ -122,39 +95,29 @@
             opacity: 0;
             z-index: 100;
         }
-        #text-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50px;
-            border-width: 10px 10px 0;
-            border-style: solid;
-            border-color: rgba(255, 255, 255, 0.95) transparent;
-        }
-        /* Controles Táctiles (Joystick) */
+        /* Controles Táctiles (Flechas) */
         #controls {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 140px;
-            height: 140px;
+            width: 200px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+        }
+        .control-btn {
+            width: 80px;
+            height: 80px;
             background: rgba(255,255,255,0.1);
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            z-index: 100;
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        #joystick {
-            width: 60px;
-            height: 60px;
-            background: #ff4a7d;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            touch-action: none;
+            font-size: 40px;
+            color: #fff;
         }
         /* Ventana de la Carta Final */
         #modal {
@@ -207,44 +170,22 @@
             font-weight: bold;
             cursor: pointer;
         }
-        /* Indicador de destino */
-        #hint {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div class="stars"></div>
-        
         <div id="ui">❤️ Corazones: <span id="score">0</span></div>
-        <div id="text-bubble">¡Usa el joystick rosa para avanzar hacia la derecha! 🏍️💨</div>
-        <div id="hint">Avanza a la derecha 👉</div>
-
-        <div id="world">
-            <!-- Carretera continua -->
-            <div class="road"><div class="road-lines"></div></div>
-            <!-- Casita al final -->
-            <div class="house" id="target-house" onclick="openLetter()">🏡</div>
-        </div>
+        <div id="text-bubble">¡Usa las flechas para esquivar los autos y recoger corazones! 🏍️💨</div>
 
         <!-- Personaje principal -->
         <div id="player">🏍️</div>
     </div>
 
-    <!-- Control Joystick -->
+    <!-- Controles Táctiles -->
     <div id="controls">
-        <div id="joystick"></div>
+        <div class="control-btn" id="left-btn">⬅️</div>
+        <div class="control-btn" id="right-btn">➡️</div>
     </div>
 
     <!-- Modal con la carta romántica -->
@@ -252,9 +193,9 @@
         <div class="envelope-wrapper">
             <h3 style="color: #ff4a7d; margin-bottom: 15px;">💌 Una cartita para ti</h3>
             <div class="letter-content">
-                <p>¡Llegaste al final del camino! 💖</p><br>
-                <p>Quería darte una sorpresa especial y diferente. Cada pasito que diste en la moto representa lo lindo que es avanzar y construir momentos juntos.</p><br>
-                <p>Gracias por estar en mi vida, por tus sonrisas, tus mensajitos y por ser esa personita tan increíble que me alegra los días por completo. Eres mi lugar favorito. ✨</p><br>
+                <p>¡Llegaste al final de la carrera! 💖</p><br>
+                <p>Espero que te hayas divertido esquivando autos y recogiendo corazones. ¡Eres un conductor experto! 🥰</p><br>
+                <p>Quería decirte lo mucho que te quiero y lo especial que eres para mí. ¡Gracias por compartir estos momentos conmigo! ✨</p><br>
                 <p>Te quiero muchísimo, ¡gracias por jugar! mi corazoncito es todo tuyo. 🧸❤️</p>
             </div>
             <button class="close-btn" onclick="closeLetter()">Cerrar con amor</button>
@@ -262,132 +203,118 @@
     </div>
 
     <script>
-        const world = document.getElementById('world');
+        const gameContainer = document.getElementById('game-container');
         const player = document.getElementById('player');
-        const joystick = document.getElementById('joystick');
-        const joystickArea = document.getElementById('controls');
         const scoreElement = document.getElementById('score');
         const textBubble = document.getElementById('text-bubble');
         const modal = document.getElementById('modal');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
 
-        let posX = 0;
-        let targetPosX = 0;
+        let playerX = 50; // Posición horizontal del jugador (%)
         let score = 0;
-        let isMoving = false;
-        let speed = 0;
+        let gameActive = true;
 
-        // Lista de frases románticas que aparecen en el camino
+        // Lista de frases románticas
         const phrases = [
-            "¡Arrancamos este viaje! Cada metro contigo es único... 🥰",
+            "¡Arrancamos la carrerita! ¡A esquivar! 🥰",
             "Me encantas más de lo que te imaginas. 💖",
             "Eres mi pensamiento favorito en todo el día. 💭✨",
-            "Contigo el camino siempre es más bonito. 🛣️❤️",
+            "Contigo la vida es una aventura emocionante. 🛣️❤️",
             "¿Ya te dije hoy lo especial que eres para mí? 🥺",
             "Coleccionando corazones... ¡como los momentos bellos a tu lado! 🧸",
-            "¡Ya casi llegas a la casita sorpresa! Mantén el rumbo. 🏡☀️",
-            "¡Toca la casa para abrir tu regalo! ✉️💘"
+            "¡Eres un as al volante! ✨",
+            "¡Cuidado con esos autos! 🚗",
+            "¡Ya casi llegas a la meta! 🥰"
         ];
 
-        // Generar corazones aleatorios en el camino
-        const worldWidth = 3000;
-        for (let i = 300; i < 2600; i += 300) {
-            const heart = document.createElement('div');
-            heart.className = 'heart-pickup';
-            heart.innerHTML = '❤️';
-            heart.style.left = `${i}px`;
-            world.appendChild(heart);
+        // Función para mover al jugador
+        function movePlayer(direction) {
+            if (!gameActive) return;
+            if (direction === 'left' && playerX > 10) {
+                playerX -= 10;
+            } else if (direction === 'right' && playerX < 90) {
+                playerX += 10;
+            }
+            player.style.left = playerX + '%';
         }
 
-        // Sistema del Joystick Táctil
-        let startX = 0;
-        const maxDistance = 40;
+        // Eventos de los botones de control
+        leftBtn.addEventListener('touchstart', () => movePlayer('left'));
+        rightBtn.addEventListener('touchstart', () => movePlayer('right'));
 
-        joystick.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isMoving = true;
-        });
+        // Generar autos y corazones aleatorios
+        function generateElements() {
+            if (!gameActive) return;
+            const type = Math.random() < 0.7 ? 'car' : 'heart';
+            const element = document.createElement('div');
+            element.className = type === 'car' ? 'car' : 'heart-pickup';
+            element.innerHTML = type === 'car' ? '🚗' : '❤️';
+            element.style.left = Math.random() * 80 + 10 + '%';
+            element.style.top = '-50px';
+            gameContainer.appendChild(element);
 
-        joystick.addEventListener('touchmove', (e) => {
-            if (!isMoving) return;
-            let currentX = e.touches[0].clientX;
-            let diffX = currentX - startX;
-
-            // Limitar movimiento visual del joystick
-            if (diffX > maxDistance) diffX = maxDistance;
-            if (diffX < -maxDistance) diffX = -maxDistance;
-
-            joystick.style.transform = `translateX(${diffX}px)`;
-
-            // Calcular velocidad basándose en el joystick (Mover a la derecha)
-            if (diffX > 10) {
-                speed = (diffX / maxDistance) * 12; // Velocidad hacia adelante
-                player.style.transform = "scaleX(-1)"; // Mira a la derecha
-            } else if (diffX < -10) {
-                speed = (diffX / maxDistance) * 8; // Reversa un poco más lenta
-                player.style.transform = "scaleX(1)"; // Mira a la izquierda
-            } else {
-                speed = 0;
-            }
-        });
-
-        joystick.addEventListener('touchend', () => {
-            isMoving = false;
-            speed = 0;
-            joystick.style.transform = `translateX(0px)`;
-        });
-
-        // Bucle principal del juego
-        function updateGame() {
-            if (speed !== 0) {
-                targetPosX += speed;
-                
-                // Límites del mapa
-                if (targetPosX < 0) targetPosX = 0;
-                if (targetPosX > 2800) targetPosX = 2800;
-            }
-
-            // Suavizado de la cámara
-            posX += (targetPosX - posX) * 0.1;
-            world.style.transform = `translateX(${-posX}px)`;
-
-            // Animación de rebote sutil en la moto al avanzar
-            if (Math.abs(speed) > 0.5) {
-                player.style.bottom = `${145 + Math.sin(Date.now() / 50) * 3}px`;
-            } else {
-                player.style.bottom = '145px';
-            }
-
-            // Revisar colisión con corazones
-            const hearts = document.querySelectorAll('.heart-pickup');
-            hearts.forEach(heart => {
-                const heartX = parseInt(heart.style.left);
-                // Si el jugador pasa cerca del corazón y no ha sido recolectado
-                if (Math.abs((posX + 70) - heartX) < 40 && heart.style.display !== 'none') {
-                    heart.style.display = 'none';
-                    score++;
-                    scoreElement.innerText = score;
-                    
-                    // Hacer aparecer burbuja con efecto divertido
-                    player.style.bottom = '160px'; // Brinquito
+            // Animar elemento hacia abajo
+            let top = -50;
+            const interval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(interval);
+                    element.remove();
+                    return;
                 }
-            });
+                top += 5;
+                element.style.top = top + 'px';
 
-            // Cambiar frases dinámicamente según la distancia recorrida
-            const phraseIndex = Math.min(Math.floor(posX / 360), phrases.length - 1);
-            if(textBubble.innerText !== phrases[phraseIndex]) {
-                textBubble.style.opacity = 0;
-                setTimeout(() => {
-                    textBubble.innerText = phrases[phraseIndex];
-                    textBubble.style.opacity = 1;
-                }, 200);
-            }
+                // Revisar colisión
+                if (top > window.innerHeight - 100 && top < window.innerHeight - 50) {
+                    const playerRect = player.getBoundingClientRect();
+                    const elementRect = element.getBoundingClientRect();
+                    if (
+                        playerRect.left < elementRect.right &&
+                        playerRect.right > elementRect.left &&
+                        playerRect.top < elementRect.bottom &&
+                        playerRect.bottom > elementRect.top
+                    ) {
+                        if (type === 'car') {
+                            // Chocó con un auto
+                            gameActive = false;
+                            textBubble.innerText = "¡Oh no! ¡Chocaste! 😢 Inténtalo de nuevo.";
+                            textBubble.style.opacity = 1;
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            // Recogió un corazón
+                            element.remove();
+                            score++;
+                            scoreElement.innerText = score;
+                            if (score % 5 === 0) {
+                                // Mostrar frase cada 5 corazones
+                                const phraseIndex = Math.min(Math.floor(score / 5), phrases.length - 1);
+                                textBubble.innerText = phrases[phraseIndex];
+                                textBubble.style.opacity = 1;
+                                setTimeout(() => textBubble.style.opacity = 0, 3000);
+                            }
+                            if (score === 20) {
+                                // Llegó a la meta
+                                gameActive = false;
+                                textBubble.innerText = "¡Felicidades! ¡Llegaste a la meta! 🥰";
+                                textBubble.style.opacity = 1;
+                                setTimeout(openLetter, 2000);
+                            }
+                        }
+                        clearInterval(interval);
+                    }
+                }
 
-            requestAnimationFrame(updateGame);
+                // Remover elemento si sale de la pantalla
+                if (top > window.innerHeight) {
+                    clearInterval(interval);
+                    element.remove();
+                }
+            }, 20);
         }
 
-        // Iniciar ciclo
-        textBubble.style.opacity = 1;
-        requestAnimationFrame(updateGame);
+        // Iniciar generación de elementos
+        setInterval(generateElements, 2000);
 
         // Funciones de la Carta
         function openLetter() {
@@ -396,8 +323,8 @@
 
         function closeLetter() {
             modal.classList.remove('active');
+            location.reload(); // Reiniciar el juego al cerrar la carta
         }
     </script>
 </body>
-              </html>
-              
+</html>
