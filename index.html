@@ -18,7 +18,6 @@
             font-family: 'Arial', sans-serif;
             height: 100vh;
         }
-        /* Estrellas parpadeantes */
         .stars {
             position: absolute;
             width: 100%;
@@ -32,7 +31,6 @@
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.7; }
         }
-        /* Escenario */
         #game-container {
             position: relative;
             width: 100%;
@@ -42,11 +40,10 @@
             position: absolute;
             bottom: 150px;
             left: 0;
-            width: 5000px; /* Espacio largo para avanzar */
+            width: 5000px;
             height: 200px;
             transition: transform 0.1s linear;
         }
-        /* Carretera */
         .road {
             position: absolute;
             bottom: 0;
@@ -62,7 +59,6 @@
             margin-top: 18px;
             opacity: 0.7;
         }
-        /* Elementos del mapa */
         .house {
             position: absolute;
             bottom: 35px;
@@ -81,17 +77,15 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        /* Personaje (Niño en moto) */
         #player {
             position: absolute;
             bottom: 145px;
             left: 50px;
             font-size: 55px;
             z-index: 10;
-            transform: scaleX(-1); /* Voltear para que vea a la derecha */
+            transform: scaleX(-1);
             transition: bottom 0.1s ease;
         }
-        /* Interfaz y Contador */
         #ui {
             position: fixed;
             top: 20px;
@@ -104,7 +98,6 @@
             backdrop-filter: blur(5px);
             z-index: 100;
         }
-        /* Cuadro de Frases Dinámicas */
         #text-bubble {
             position: fixed;
             top: 100px;
@@ -122,16 +115,6 @@
             opacity: 0;
             z-index: 100;
         }
-        #text-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50px;
-            border-width: 10px 10px 0;
-            border-style: solid;
-            border-color: rgba(255, 255, 255, 0.95) transparent;
-        }
-        /* Controles Táctiles (Joystick) */
         #controls {
             position: fixed;
             bottom: 20px;
@@ -156,7 +139,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             touch-action: none;
         }
-        /* Ventana de la Carta Final */
         #modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -207,196 +189,82 @@
             font-weight: bold;
             cursor: pointer;
         }
-        /* Indicador de destino */
-        #hint {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
     </style>
 </head>
 <body>
-
     <div id="game-container">
         <div class="stars"></div>
-        
         <div id="ui">❤️ Corazones: <span id="score">0</span></div>
         <div id="text-bubble">¡Usa el joystick rosa para avanzar hacia la derecha! 🏍️💨</div>
-        <div id="hint">Avanza a la derecha 👉</div>
-
         <div id="world">
-            <!-- Carretera continua -->
             <div class="road"><div class="road-lines"></div></div>
-            <!-- Casita al final -->
             <div class="house" id="target-house" onclick="openLetter()">🏡</div>
         </div>
-
-        <!-- Personaje principal -->
         <div id="player">🏍️</div>
     </div>
-
-    <!-- Control Joystick -->
     <div id="controls">
         <div id="joystick"></div>
     </div>
-
-    <!-- Modal con la carta romántica -->
-    <div id="modal" id="letter-modal">
+    <div id="modal">
         <div class="envelope-wrapper">
             <h3 style="color: #ff4a7d; margin-bottom: 15px;">💌 Una cartita para ti</h3>
             <div class="letter-content">
                 <p>¡Llegaste al final del camino! 💖</p><br>
-                <p>Quería darte una sorpresa especial y diferente. Cada pasito que diste en la moto representa lo lindo que es avanzar y construir momentos juntos.</p><br>
-                <p>Gracias por estar en mi vida, por tus sonrisas, tus mensajitos y por ser esa personita tan increíble que me alegra los días por completo. Eres mi lugar favorito. ✨</p><br>
-                <p>Te quiero muchísimo, ¡gracias por jugar! mi corazoncito es todo tuyo. 🧸❤️</p>
+                <p>Cada pasito que diste en la moto representa lo lindo que es avanzar y construir momentos juntos.</p><br>
+                <p>Gracias por estar en mi vida, por tus sonrisas y por ser esa personita tan increíble. ¡Te quiero muchísimo! ✨</p>
             </div>
             <button class="close-btn" onclick="closeLetter()">Cerrar con amor</button>
         </div>
     </div>
-
     <script>
         const world = document.getElementById('world');
         const player = document.getElementById('player');
         const joystick = document.getElementById('joystick');
-        const joystickArea = document.getElementById('controls');
         const scoreElement = document.getElementById('score');
         const textBubble = document.getElementById('text-bubble');
         const modal = document.getElementById('modal');
-
-        let posX = 0;
-        let targetPosX = 0;
-        let score = 0;
-        let isMoving = false;
-        let speed = 0;
-
-        // Lista de frases románticas que aparecen en el camino
+        let posX = 0, targetPosX = 0, score = 0, isMoving = false, speed = 0;
         const phrases = [
-            "¡Arrancamos este viaje! Cada metro contigo es único... 🥰",
-            "Me encantas más de lo que te imaginas. 💖",
-            "Eres mi pensamiento favorito en todo el día. 💭✨",
-            "Contigo el camino siempre es más bonito. 🛣️❤️",
-            "¿Ya te dije hoy lo especial que eres para mí? 🥺",
-            "Coleccionando corazones... ¡como los momentos bellos a tu lado! 🧸",
-            "¡Ya casi llegas a la casita sorpresa! Mantén el rumbo. 🏡☀️",
-            "¡Toca la casa para abrir tu regalo! ✉️💘"
+            "¡Arrancamos este viaje! 🥰", "Me encantas más de lo que te imaginas. 💖",
+            "Eres mi pensamiento favorito. 💭✨", "Contigo el camino siempre es más bonito. 🛣️❤️",
+            "¿Ya te dije hoy lo especial que eres? 🥺", "Coleccionando corazones... 🧸",
+            "¡Ya casi llegas a la sorpresa! 🏡☀️", "¡Toca la casa para abrir tu regalo! ✉️💘"
         ];
-
-        // Generar corazones aleatorios en el camino
         const worldWidth = 3000;
         for (let i = 300; i < 2600; i += 300) {
             const heart = document.createElement('div');
-            heart.className = 'heart-pickup';
-            heart.innerHTML = '❤️';
-            heart.style.left = `${i}px`;
-            world.appendChild(heart);
+            heart.className = 'heart-pickup'; heart.innerHTML = '❤️';
+            heart.style.left = `${i}px`; world.appendChild(heart);
         }
-
-        // Sistema del Joystick Táctil
         let startX = 0;
-        const maxDistance = 40;
-
-        joystick.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isMoving = true;
-        });
-
+        joystick.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isMoving = true; });
         joystick.addEventListener('touchmove', (e) => {
             if (!isMoving) return;
-            let currentX = e.touches[0].clientX;
-            let diffX = currentX - startX;
-
-            // Limitar movimiento visual del joystick
-            if (diffX > maxDistance) diffX = maxDistance;
-            if (diffX < -maxDistance) diffX = -maxDistance;
-
+            let diffX = e.touches[0].clientX - startX;
+            if (diffX > 40) diffX = 40; if (diffX < -40) diffX = -40;
             joystick.style.transform = `translateX(${diffX}px)`;
-
-            // Calcular velocidad basándose en el joystick (Mover a la derecha)
-            if (diffX > 10) {
-                speed = (diffX / maxDistance) * 12; // Velocidad hacia adelante
-                player.style.transform = "scaleX(-1)"; // Mira a la derecha
-            } else if (diffX < -10) {
-                speed = (diffX / maxDistance) * 8; // Reversa un poco más lenta
-                player.style.transform = "scaleX(1)"; // Mira a la izquierda
-            } else {
-                speed = 0;
-            }
+            speed = (diffX / 40) * 12;
+            player.style.transform = diffX > 0 ? "scaleX(-1)" : "scaleX(1)";
         });
-
-        joystick.addEventListener('touchend', () => {
-            isMoving = false;
-            speed = 0;
-            joystick.style.transform = `translateX(0px)`;
-        });
-
-        // Bucle principal del juego
+        joystick.addEventListener('touchend', () => { isMoving = false; speed = 0; joystick.style.transform = `translateX(0px)`; });
         function updateGame() {
-            if (speed !== 0) {
-                targetPosX += speed;
-                
-                // Límites del mapa
-                if (targetPosX < 0) targetPosX = 0;
-                if (targetPosX > 2800) targetPosX = 2800;
-            }
-
-            // Suavizado de la cámara
+            if (speed !== 0) { targetPosX += speed; if (targetPosX < 0) targetPosX = 0; if (targetPosX > 2800) targetPosX = 2800; }
             posX += (targetPosX - posX) * 0.1;
             world.style.transform = `translateX(${-posX}px)`;
-
-            // Animación de rebote sutil en la moto al avanzar
-            if (Math.abs(speed) > 0.5) {
-                player.style.bottom = `${145 + Math.sin(Date.now() / 50) * 3}px`;
-            } else {
-                player.style.bottom = '145px';
-            }
-
-            // Revisar colisión con corazones
             const hearts = document.querySelectorAll('.heart-pickup');
             hearts.forEach(heart => {
                 const heartX = parseInt(heart.style.left);
-                // Si el jugador pasa cerca del corazón y no ha sido recolectado
                 if (Math.abs((posX + 70) - heartX) < 40 && heart.style.display !== 'none') {
-                    heart.style.display = 'none';
-                    score++;
-                    scoreElement.innerText = score;
-                    
-                    // Hacer aparecer burbuja con efecto divertido
-                    player.style.bottom = '160px'; // Brinquito
+                    heart.style.display = 'none'; score++; scoreElement.innerText = score;
                 }
             });
-
-            // Cambiar frases dinámicamente según la distancia recorrida
             const phraseIndex = Math.min(Math.floor(posX / 360), phrases.length - 1);
-            if(textBubble.innerText !== phrases[phraseIndex]) {
-                textBubble.style.opacity = 0;
-                setTimeout(() => {
-                    textBubble.innerText = phrases[phraseIndex];
-                    textBubble.style.opacity = 1;
-                }, 200);
-            }
-
+            if(textBubble.innerText !== phrases[phraseIndex]) { textBubble.style.opacity = 0; setTimeout(() => { textBubble.innerText = phrases[phraseIndex]; textBubble.style.opacity = 1; }, 200); }
             requestAnimationFrame(updateGame);
         }
-
-        // Iniciar ciclo
-        textBubble.style.opacity = 1;
         requestAnimationFrame(updateGame);
-
-        // Funciones de la Carta
-        function openLetter() {
-            modal.classList.add('active');
-        }
-
-        function closeLetter() {
-            modal.classList.remove('active');
-        }
+        function openLetter() { modal.classList.add('active'); }
+        function closeLetter() { modal.classList.remove('active'); }
     </script>
 </body>
 </html>
