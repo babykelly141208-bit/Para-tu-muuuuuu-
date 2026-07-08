@@ -2,34 +2,283 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bosque Mágico</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bosque de los Recuerdos 🌲✨</title>
     <style>
-        body { margin: 0; background: #0e4526; color: white; font-family: sans-serif; overflow: hidden; }
-        #app { width: 100vw; height: 100vh; position: relative; }
-        #character { position: absolute; top: 50%; left: 50%; font-size: 40px; z-index: 10; }
-        .tree { position: absolute; font-size: 60px; cursor: pointer; }
-        #msg { position: fixed; top: 10px; width: 100%; text-align: center; pointer-events: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            margin: 0;
+            background: #092c15;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+            height: 100vh;
+            width: 100vw;
+        }
+        #viewport {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Mapa del Bosque con textura de pasto */
+        #game-world {
+            width: 3000px;
+            height: 3000px;
+            position: absolute;
+            background-color: #0b3619;
+            background-image: 
+                radial-gradient(#114d25 15%, transparent 16%),
+                radial-gradient(#0e411f 15%, transparent 16%);
+            background-size: 80px 80px;
+            background-position: 0 0, 40px 40px;
+            top: 0;
+            left: 0;
+            will-change: transform;
+        }
+        /* Árboles con sombra bonita */
+        .tree {
+            position: absolute;
+            font-size: 65px;
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 8px 6px rgba(0,0,0,0.4));
+            transition: transform 0.2s;
+        }
+        .tree:active {
+            transform: scale(1.2);
+        }
+        /* Personaje personalizado: Traje negro (👤) y casco blanco (⚪) */
+        #player {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+        }
+        /* Zona del Joystick */
+        #joystick-container {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        #stick {
+            width: 60px;
+            height: 60px;
+            background: #ff4a7d;
+            border-radius: 50%;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            transition: transform 0.05s ease;
+        }
+        /* Cartas flotantes (Modales) */
+        #modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 24px;
+            backdrop-filter: blur(4px);
+        }
+        .card {
+            background: #fff;
+            padding: 30px 24px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            animation: openCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 6px solid #ff4a7d;
+        }
+        @keyframes openCard {
+            from { transform: scale(0.6); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .card h3 { font-size: 45px; margin-bottom: 12px; }
+        .card p { color: #333; font-size: 16px; line-height: 1.5; margin-bottom: 20px; font-weight: 500; }
+        .close-btn {
+            background: #ff4a7d;
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 10px rgba(255, 74, 125, 0.4);
+        }
+        /* Barra de Instrucción Superior */
+        .instruction {
+            position: fixed;
+            top: 25px;
+            width: 85%;
+            left: 7.5%;
+            text-align: center;
+            color: white;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 50px;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
 
-<div id="msg">¡Toca los árboles para ver mensajes! 🌲✨</div>
-<div id="app">
-    <div id="character">👤⚪</div>
-    <div class="tree" style="top: 20%; left: 20%;" onclick="alert('💖 Nuestra historia empezó aquí.')">🌲</div>
-    <div class="tree" style="top: 20%; left: 70%;" onclick="alert('🥰 Eres mi persona favorita.')">🌲</div>
-    <div class="tree" style="top: 70%; left: 20%;" onclick="alert('✨ Gracias por ser tú.')">🌲</div>
-    <div class="tree" style="top: 70%; left: 70%;" onclick="alert('🧸 Te quiero muchísimo.')">🌲</div>
+<div class="instruction">¡Explora con el joystick rosa y abre los árboles! 🌲💌</div>
+
+<div id="viewport">
+    <div id="game-world">
+        <div id="player">👤⚪</div>
+
+        <div class="tree" style="top: 1350px; left: 1300px;" onclick="showCard('¡Encontraste el primer recuerdo! 💖 Aquí es donde nuestra hermosa historia comenzó.')">🌲</div>
+        <div class="tree" style="top: 1600px; left: 1650px;" onclick="showCard('Eres mi persona favorita en todo el universo entero. No lo olvides nunca. 🥰')">🌲</div>
+        <div class="tree" style="top: 1200px; left: 1700px;" onclick="showCard('Me fascina cómo logras hacerme sonreír con cualquier cosita que dices o haces. ✨')">🌲</div>
+        <div class="tree" style="top: 1700px; left: 1250px;" onclick="showCard('Cada rincón de este bosque guarda un momento mágico y lindo que he vivido a tu lado. 🧸')">🌲</div>
+        <div class="tree" style="top: 1450px; left: 1500px;" onclick="showCard('¡Llegaste al corazón del bosque! Mi lugar seguro y mi felicidad siempre serás tú. 💌❤️')">🌲</div>
+    </div>
+</div>
+
+<div id="joystick-container">
+    <div id="stick"></div>
+</div>
+
+<div id="modal" onclick="closeCard()">
+    <div class="card" onclick="event.stopPropagation()">
+        <h3>💌</h3>
+        <p id="card-text"></p>
+        <button class="close-btn" onclick="closeCard()">Cerrar con amor</button>
+    </div>
 </div>
 
 <script>
-    // Movimiento básico al tocar la pantalla
-    document.addEventListener('touchstart', (e) => {
-        const char = document.getElementById('character');
-        char.style.left = e.touches[0].clientX - 20 + 'px';
-        char.style.top = e.touches[0].clientY - 20 + 'px';
+    const world = document.getElementById('game-world');
+    const player = document.getElementById('player');
+    const stick = document.getElementById('stick');
+    const joystickContainer = document.getElementById('joystick-container');
+
+    // Posición inicial del jugador en el mapa
+    let pX = 1450;
+    let pY = 1450;
+    
+    let moveX = 0;
+    let moveY = 0;
+    let isMoving = false;
+
+    function updateCamera() {
+        player.style.left = pX + 'px';
+        player.style.top = pY + 'px';
+        
+        // Mantiene la cámara perfectamente fija en el jugador
+        let camX = -pX + (window.innerWidth / 2) - 30;
+        let camY = -pY + (window.innerHeight / 2) - 30;
+        world.style.transform = `translate3d(${camX}px, ${camY}px, 0)`;
+    }
+
+    // Soporte táctil móvil avanzado para el Joystick
+    joystickContainer.addEventListener('touchstart', (e) => {
+        isMoving = true;
+        handleJoystick(e.touches[0]);
+    }, {passive: true});
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isMoving) return;
+        handleJoystick(e.touches[0]);
+    }, {passive: false});
+
+    document.addEventListener('touchend', () => {
+        isMoving = false;
+        moveX = 0;
+        moveY = 0;
+        stick.style.transform = 'translate(0px, 0px)';
     });
+
+    function handleJoystick(touch) {
+        const rect = joystickContainer.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        let deltaX = touch.clientX - centerX;
+        let deltaY = touch.clientY - centerY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const maxDistance = 40;
+
+        if (distance > maxDistance) {
+            deltaX = (deltaX / distance) * maxDistance;
+            deltaY = (deltaY / distance) * maxDistance;
+        }
+
+        stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+        // Velocidad de caminata suave
+        moveX = (deltaX / maxDistance) * 7;
+        moveY = (deltaY / maxDistance) * 7;
+    }
+
+    // Loop de renderizado suave
+    function gameLoop() {
+        if (isMoving) {
+            pX += moveX;
+            pY += moveY;
+
+            // Bloqueo para que no se salga de los límites del mapa verde
+            if (pX < 100) pX = 100;
+            if (pX > 2900) pX = 2900;
+            if (pY < 100) pY = 100;
+            if (pY > 2900) pY = 2900;
+
+            updateCamera();
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function showCard(text) {
+        document.getElementById('card-text').innerText = text;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeCard() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    // Arrancar centrado
+    updateCamera();
+    requestAnimationFrame(gameLoop);
 </script>
 </body>
-</html>
+    </html>
+            
