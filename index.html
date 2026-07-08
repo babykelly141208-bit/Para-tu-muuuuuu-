@@ -3,268 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Para ti ❤️</title>
+    <title>Bosque de Recuerdos</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        body {
-            background: linear-gradient(to bottom, #0b001a, #1f003d);
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
-            height: 100vh;
-        }
-        .stars {
-            position: absolute;
-            width: 100%;
-            height: 60%;
-            background-image: radial-gradient(white 1px, transparent 0);
-            background-size: 40px 40px;
-            opacity: 0.5;
-            animation: twinkle 3s infinite ease-in-out;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.7; }
-        }
-        #game-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        #world {
-            position: absolute;
-            bottom: 150px;
-            left: 0;
-            width: 5000px;
-            height: 200px;
-            transition: transform 0.1s linear;
-        }
-        .road {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 40px;
-            background: #333;
-            border-top: 4px solid #fff;
-        }
-        .road-lines {
-            width: 100%;
-            height: 2px;
-            border-top: 2px dashed #fff;
-            margin-top: 18px;
-            opacity: 0.7;
-        }
-        .house {
-            position: absolute;
-            bottom: 35px;
-            left: 2800px;
-            font-size: 90px;
-            cursor: pointer;
-            z-index: 5;
-        }
-        .heart-pickup {
-            position: absolute;
-            bottom: 60px;
-            font-size: 24px;
-            animation: float 2s infinite ease-in-out;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        #player {
-            position: absolute;
-            bottom: 145px;
-            left: 50px;
-            font-size: 55px;
-            z-index: 10;
-            transform: scaleX(-1);
-            transition: bottom 0.1s ease;
-        }
-        #ui {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: #fff;
-            font-size: 18px;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-            z-index: 100;
-        }
-        #text-bubble {
-            position: fixed;
-            top: 100px;
-            left: 5%;
-            width: 90%;
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            font-size: 16px;
-            transition: opacity 0.3s;
-            opacity: 0;
-            z-index: 100;
-        }
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 140px;
-            background: rgba(255,255,255,0.1);
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        #joystick {
-            width: 60px;
-            height: 60px;
-            background: #ff4a7d;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            touch-action: none;
-        }
-        #modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            z-index: 200;
-            padding: 20px;
-        }
-        #modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .envelope-wrapper {
-            background: #fff;
-            padding: 30px 20px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transform: scale(0.7);
-            transition: transform 0.5s ease;
-        }
-        #modal.active .envelope-wrapper {
-            transform: scale(1);
-        }
-        .letter-content {
-            max-height: 250px;
-            overflow-y: auto;
-            font-size: 16px;
-            line-height: 1.5;
-            color: #444;
-            margin-bottom: 20px;
-            text-align: left;
-            padding-right: 5px;
-        }
-        .close-btn {
-            background: #ff4a7d;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        body { margin: 0; background: #0e4526; overflow: hidden; font-family: sans-serif; touch-action: none; }
+        #game { width: 2000px; height: 2000px; position: relative; background: radial-gradient(circle, #1a6e3e 0%, #0e4526 100%); transition: transform 0.05s linear; }
+        .tree { position: absolute; font-size: 70px; cursor: pointer; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+        #player { position: absolute; top: 1000px; left: 1000px; font-size: 50px; z-index: 10; transition: transform 0.1s; }
+        #joystick { position: fixed; bottom: 40px; right: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.2); border-radius: 50%; border: 3px solid rgba(255,255,255,0.5); z-index: 100; }
+        #stick { position: absolute; top: 35px; left: 35px; width: 60px; height: 60px; background: #ff4a7d; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .instruction { position: fixed; top: 20px; width: 100%; text-align: center; color: white; pointer-events: none; font-weight: bold; text-shadow: 1px 1px 2px black; }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div class="stars"></div>
-        <div id="ui">❤️ Corazones: <span id="score">0</span></div>
-        <div id="text-bubble">¡Usa el joystick rosa para avanzar hacia la derecha! 🏍️💨</div>
-        <div id="world">
-            <div class="road"><div class="road-lines"></div></div>
-            <div class="house" id="target-house" onclick="openLetter()">🏡</div>
-        </div>
-        <div id="player">🏍️</div>
-    </div>
-    <div id="controls">
-        <div id="joystick"></div>
-    </div>
-    <div id="modal">
-        <div class="envelope-wrapper">
-            <h3 style="color: #ff4a7d; margin-bottom: 15px;">💌 Una cartita para ti</h3>
-            <div class="letter-content">
-                <p>¡Llegaste al final del camino! 💖</p><br>
-                <p>Cada pasito que diste en la moto representa lo lindo que es avanzar y construir momentos juntos.</p><br>
-                <p>Gracias por estar en mi vida, por tus sonrisas y por ser esa personita tan increíble. ¡Te quiero muchísimo! ✨</p>
-            </div>
-            <button class="close-btn" onclick="closeLetter()">Cerrar con amor</button>
-        </div>
-    </div>
-    <script>
-        const world = document.getElementById('world');
-        const player = document.getElementById('player');
-        const joystick = document.getElementById('joystick');
-        const scoreElement = document.getElementById('score');
-        const textBubble = document.getElementById('text-bubble');
-        const modal = document.getElementById('modal');
-        let posX = 0, targetPosX = 0, score = 0, isMoving = false, speed = 0;
-        const phrases = [
-            "¡Arrancamos este viaje! 🥰", "Me encantas más de lo que te imaginas. 💖",
-            "Eres mi pensamiento favorito. 💭✨", "Contigo el camino siempre es más bonito. 🛣️❤️",
-            "¿Ya te dije hoy lo especial que eres? 🥺", "Coleccionando corazones... 🧸",
-            "¡Ya casi llegas a la sorpresa! 🏡☀️", "¡Toca la casa para abrir tu regalo! ✉️💘"
-        ];
-        const worldWidth = 3000;
-        for (let i = 300; i < 2600; i += 300) {
-            const heart = document.createElement('div');
-            heart.className = 'heart-pickup'; heart.innerHTML = '❤️';
-            heart.style.left = `${i}px`; world.appendChild(heart);
-        }
-        let startX = 0;
-        joystick.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isMoving = true; });
-        joystick.addEventListener('touchmove', (e) => {
-            if (!isMoving) return;
-            let diffX = e.touches[0].clientX - startX;
-            if (diffX > 40) diffX = 40; if (diffX < -40) diffX = -40;
-            joystick.style.transform = `translateX(${diffX}px)`;
-            speed = (diffX / 40) * 12;
-            player.style.transform = diffX > 0 ? "scaleX(-1)" : "scaleX(1)";
-        });
-        joystick.addEventListener('touchend', () => { isMoving = false; speed = 0; joystick.style.transform = `translateX(0px)`; });
-        function updateGame() {
-            if (speed !== 0) { targetPosX += speed; if (targetPosX < 0) targetPosX = 0; if (targetPosX > 2800) targetPosX = 2800; }
-            posX += (targetPosX - posX) * 0.1;
-            world.style.transform = `translateX(${-posX}px)`;
-            const hearts = document.querySelectorAll('.heart-pickup');
-            hearts.forEach(heart => {
-                const heartX = parseInt(heart.style.left);
-                if (Math.abs((posX + 70) - heartX) < 40 && heart.style.display !== 'none') {
-                    heart.style.display = 'none'; score++; scoreElement.innerText = score;
-                }
-            });
-            const phraseIndex = Math.min(Math.floor(posX / 360), phrases.length - 1);
-            if(textBubble.innerText !== phrases[phraseIndex]) { textBubble.style.opacity = 0; setTimeout(() => { textBubble.innerText = phrases[phraseIndex]; textBubble.style.opacity = 1; }, 200); }
-            requestAnimationFrame(updateGame);
-        }
-        requestAnimationFrame(updateGame);
-        function openLetter() { modal.classList.add('active'); }
-        function closeLetter() { modal.classList.remove('active'); }
-    </script>
+
+<div class="instruction">¡Mueve el joystick rosa para explorar el bosque y toca los árboles! 🌲✨</div>
+
+<div id="game">
+    <div id="player">👤⚪</div>
+    <!-- Árboles con mensajes -->
+    <div class="tree" style="top: 400px; left: 500px;" onclick="showCard('Aquí empezó todo... nuestro primer encuentro. 💖')">🌲</div>
+    <div class="tree" style="top: 1500px; left: 300px;" onclick="showCard('Eres mi persona favorita en todo el mundo. 🥰')">🌲</div>
+    <div class="tree" style="top: 1200px; left: 1600px;" onclick="showCard('Me encanta cómo me haces sonreír sin darte cuenta. ✨')">🌲</div>
+    <div class="tree" style="top: 600px; left: 1400px;" onclick="showCard('Nunca olvides que aquí tienes a alguien que te adora. 🧸')">🌲</div>
+    <div class="tree" style="top: 1100px; left: 1000px;" onclick="showCard('¡Este es el corazón del bosque, donde guardo todo mi amor por ti! 💌')">🌲</div>
+</div>
+
+<div id="joystick"><div id="stick"></div></div>
+<div id="modal" onclick="this.style.display='none'"><div class="card" id="card-text"></div></div>
+
+<script>
+    const player = document.getElementById('player');
+    const game = document.getElementById('game');
+    const stick = document.getElementById('stick');
+    let posX = 1000, posY = 1000;
+
+    function updateView() {
+        game.style.transform = `translate(${-posX + window.innerWidth/2}px, ${-posY + window.innerHeight/2}px)`;
+        player.style.left = posX + 'px';
+        player.style.top = posY + 'px';
+    }
+
+    document.getElementById('joystick').addEventListener('touchmove', (e) => {
+        let touch = e.touches[0];
+        let rect = e.target.getBoundingClientRect();
+        let dx = (touch.clientX - (rect.left + 65)) / 5;
+        let dy = (touch.clientY - (rect.top + 65)) / 5;
+        posX += dx; posY += dy;
+        updateView();
+    });
+
+    function showCard(text) {
+        document.getElementById('card-text').innerHTML = '<h3>💌</h3>' + text;
+        document.getElementById('modal').style.display = 'flex';
+    }
+    updateView();
+</script>
 </body>
 </html>
