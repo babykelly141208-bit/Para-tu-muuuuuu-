@@ -1,340 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto R6 - El Mecánico</title>
-    <style>
-        body {
-            margin: 0;
-            background-color: #050505;
-            color: white;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
-        }
-        #gameContainer {
-            position: relative;
-            width: 800px;
-            height: 500px;
-            border: 2px solid #333;
-            background-color: #000;
-        }
-        canvas {
-            display: block;
-            background-color: #000;
-        }
-        /* Animación de vibración para el rugido del motor */
-        .shake {
-            animation: shakeAnim 0.1s infinite;
-        }
-        @keyframes shakeAnim {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(0px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(2px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(2px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Mecánico</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#141414;
+    color:white;
+    overflow:hidden;
+}
+
+#inicio,#taller{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+#taller{
+    display:none;
+    background:#222;
+}
+
+h1{
+    font-size:55px;
+    margin-bottom:15px;
+}
+
+p{
+    opacity:.8;
+    margin-bottom:40px;
+    text-align:center;
+    max-width:500px;
+}
+
+button{
+    padding:15px 40px;
+    border:none;
+    border-radius:10px;
+    font-size:20px;
+    cursor:pointer;
+    background:#666;
+    color:white;
+    transition:.3s;
+}
+
+button:hover{
+    background:#888;
+}
+
+#garaje{
+    width:90%;
+    max-width:900px;
+    height:500px;
+    background:#2f2f2f;
+    border:5px solid #555;
+    border-radius:20px;
+    position:relative;
+    overflow:hidden;
+}
+
+#luz{
+    position:absolute;
+    top:0;
+    right:0;
+    width:250px;
+    height:100%;
+    background:linear-gradient(to left,rgba(255,230,150,.35),transparent);
+}
+
+#moto{
+    position:absolute;
+    bottom:70px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:120px;
+}
+</style>
 </head>
+
 <body>
 
-<div id="gameContainer">
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+<div id="inicio">
+<h1>El Mecánico</h1>
+
+<p>
+Hay máquinas que esperan ser reconstruidas.
+Hoy, una de ellas espera por ti.
+</p>
+
+<button onclick="comenzar()">
+Comenzar
+</button>
+</div>
+
+<div id="taller">
+
+<div id="garaje">
+
+<div id="luz"></div>
+
+<div id="moto">
+🏍️
+</div>
+
+</div>
+
 </div>
 
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const container = document.getElementById("gameContainer");
 
-// ESTADOS DEL JUEGO: 'INTRO_DARK', 'INTRO_TEXT', 'TALLER_HERRAMIENTAS', 'TALLER_MOTO', 'TANQUE', 'ENCENDIDO', 'FINAL', 'CREDITOS'
-let gameState = 'INTRO_DARK'; 
-let ambientLight = 0.05; // Controla la iluminación del taller
+function comenzar(){
 
-// Mensajes en pantalla
-let activeMessage = "Haz clic en la oscuridad...";
-let messageTimer = 0;
+document.getElementById("inicio").style.display="none";
+document.getElementById("taller").style.display="flex";
 
-// FASE 1: Herramientas
-let tools = [
-    { name: 'Llave inglesa', x: 120, y: 380, w: 40, h: 15, found: false, text: "No todo se arregla con fuerza." },
-    { name: 'Destornillador', x: 680, y: 350, w: 35, h: 10, found: false, text: "A veces basta con paciencia." },
-    { name: 'Carraca', x: 250, y: 410, w: 30, h: 12, found: false, text: "Sigue aprendiendo." }, // Pensamiento incluido aquí
-    { name: 'Pinzas', x: 550, y: 390, w: 25, h: 20, found: false, text: "Los pequeños detalles sostienen las cosas más importantes." }
-];
-
-// FASE 2: Piezas de la moto
-let parts = [
-    { name: 'Chasis', placed: false, text: "Las rutas difíciles también llevan a lugares increíbles." },
-    { name: 'Motor', placed: false, text: "Nunca dejes de sentir esa emoción cuando escuchas un motor encender." },
-    { name: 'Suspensión', placed: false, text: "No pierdas esa curiosidad que siempre te ha hecho avanzar." },
-    { name: 'Llantas', placed: false, text: "" },
-    { name: 'Escape', placed: false, text: "" },
-    { name: 'Cadena', placed: false, text: "" },
-    { name: 'Carenados', placed: false, text: "" },
-    { name: 'Faro', placed: false, text: "" }
-];
-let currentPartIndex = 0;
-
-// Botón de combustible (Fase 3)
-let fuelButton = { x: 350, y: 420, w: 100, h: 40, filled: false };
-
-// Intentos de encendido
-let startAttempts = 0;
-let motoX = 400; // Posición de la moto para el escape final
-let finalTimer = 0;
-
-// --- CLICK INTERACTION ---
-canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    if (gameState === 'INTRO_DARK') {
-        // Sonido imaginario del click / llave cayendo
-        gameState = 'INTRO_TEXT';
-        activeMessage = '"Hay cosas que solo vuelven a funcionar cuando alguien les dedica tiempo."';
-        messageTimer = 180; 
-    } 
-    else if (gameState === 'TALLER_HERRAMIENTAS') {
-        // Buscar herramientas
-        tools.forEach(t => {
-            if (!t.found && mouseX > t.x && mouseX < t.x + t.w && mouseY > t.y && mouseY < t.y + t.h) {
-                t.found = true;
-                activeMessage = t.text;
-                messageTimer = 150;
-                ambientLight += 0.08; // Sube la luz
-            }
-        });
-        // Si se encontraron todas, pasar a la moto
-        if (tools.every(t => t.found) && messageTimer <= 0) {
-            gameState = 'TALLER_MOTO';
-            activeMessage = "Haz clic en la mesa de trabajo para armar el " + parts[currentPartIndex].name;
-        }
-    } 
-    else if (gameState === 'TALLER_MOTO') {
-        // Click en la zona central para armar la siguiente pieza
-        if (mouseX > 300 && mouseX < 500 && mouseY > 200 && mouseY < 350) {
-            if (currentPartIndex < parts.length) {
-                let p = parts[currentPartIndex];
-                p.placed = true;
-                if (p.text !== "") {
-                    activeMessage = p.text;
-                    messageTimer = 150;
-                }
-                currentPartIndex++;
-                ambientLight += 0.08; // Se ilumina más el taller
-
-                if (currentPartIndex >= parts.length) {
-                    gameState = 'TANQUE';
-                } else {
-                    if (p.text === "") activeMessage = "Instalado: " + p.name;
-                }
-            }
-        }
-    }
-    else if (gameState === 'TANQUE') {
-        // Llenar el tanque
-        if (mouseX > fuelButton.x && mouseX < fuelButton.x + fuelButton.w && mouseY > fuelButton.y && mouseY < fuelButton.y + fuelButton.h) {
-            fuelButton.filled = true;
-            activeMessage = '"Una máquina solo necesita combustible para avanzar... Las personas necesitan sueños."';
-            messageTimer = 200;
-            gameState = 'ENCENDIDO';
-        }
-    }
-    else if (gameState === 'ENCENDIDO' && messageTimer <= 0) {
-        // Intentar arrancar la moto
-        startAttempts++;
-        if (startAttempts === 1) {
-            activeMessage = "...intenta arrancar... no prende.";
-            messageTimer = 90;
-        } else if (startAttempts === 2) {
-            activeMessage = "Lo intenta otra vez.";
-            messageTimer = 60;
-        } else if (startAttempts === 3) {
-            activeMessage = "Y otra.";
-            messageTimer = 60;
-        } else if (startAttempts >= 4) {
-            activeMessage = "¡¡BRRRRMMM!! 🏍️";
-            container.classList.add("shake"); // Hace vibrar el contenedor
-            messageTimer = 120;
-            gameState = 'FINAL';
-        }
-    }
-});
-
-// --- GAME LOOP ---
-function loop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (messageTimer > 0) messageTimer--;
-
-    // Lógica de estados de transición automática
-    if (gameState === 'INTRO_TEXT' && messageTimer === 0) {
-        gameState = 'TALLER_HERRAMIENTAS';
-        activeMessage = "Busca las herramientas en la oscuridad del taller...";
-    }
-
-    // --- RENDERIZADO ---
-
-    // Fondo del taller según la iluminación ambiental
-    let grey = Math.floor(ambientLight * 40);
-    ctx.fillStyle = `rgb(${grey}, ${grey}, ${grey})`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    if (gameState !== 'INTRO_DARK' && gameState !== 'INTRO_TEXT') {
-        // Suelo y mesa de trabajo
-        ctx.fillStyle = `rgb(${grey+20}, ${grey+20}, ${grey+20})`;
-        ctx.fillRect(0, 350, canvas.width, 150);
-        ctx.fillStyle = "#333";
-        ctx.fillRect(300, 320, 200, 30); // Soporte/Mesa de la moto
-
-        // Dibujar herramientas si no han sido encontradas
-        ctx.fillStyle = `rgba(192, 192, 192, ${ambientLight + 0.2})`;
-        tools.forEach(t => {
-            if (!t.found) {
-                ctx.fillRect(t.x, t.y, t.w, t.h);
-                ctx.fillStyle = "rgba(255,255,255,0.05)"; // mini brillo
-                ctx.fillRect(t.x, t.y, 4, 4);
-                ctx.fillStyle = `rgba(192, 192, 192, ${ambientLight + 0.2})`;
-            }
-        });
-
-        // Dibujar la moto progresivamente
-        ctx.lineWidth = 4;
-        let motoColor = `rgba(255, 255, 255, ${ambientLight})`;
-        ctx.strokeStyle = motoColor;
-
-        if (parts[0].placed) { // Chasis
-            ctx.beginPath(); ctx.moveTo(motoX - 60, 260); ctx.lineTo(motoX + 60, 260); ctx.lineTo(motoX + 20, 310); ctx.lineTo(motoX - 40, 310); ctx.closePath(); ctx.stroke();
-        }
-        if (parts[1].placed) { // Motor
-            ctx.fillStyle = "#555"; ctx.fillRect(motoX - 20, 275, 40, 30);
-        }
-        if (parts[2].placed) { // Suspensión
-            ctx.beginPath(); ctx.moveTo(motoX + 50, 260); ctx.lineTo(motoX + 70, 320); ctx.moveTo(motoX - 50, 260); ctx.lineTo(motoX - 70, 320); ctx.stroke();
-        }
-        if (parts[3].placed) { // Llantas
-            ctx.fillStyle = "#222";
-            ctx.beginPath(); ctx.arc(motoX - 70, 320, 25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.beginPath(); ctx.arc(motoX + 70, 320, 25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        }
-        if (parts[4].placed) { // Escape
-            ctx.strokeStyle = "#888"; ctx.beginPath(); ctx.moveTo(motoX - 10, 295); ctx.lineTo(motoX - 60, 310); ctx.stroke();
-        }
-        if (parts[5].placed) { // Cadena
-            ctx.strokeStyle = "#444"; ctx.strokeRect(motoX - 70, 315, 60, 8);
-        }
-        if (parts[6].placed) { // Carenados
-            ctx.fillStyle = "#d9534f"; // Un tono rojo deportivo elegante
-            ctx.beginPath(); ctx.moveTo(motoX - 50, 260); ctx.lineTo(motoX + 40, 250); ctx.lineTo(motoX + 20, 280); ctx.lineTo(motoX - 30, 280); ctx.closePath(); ctx.fill();
-        }
-        if (parts[7].placed) { // Faro
-            ctx.fillStyle = "#fffb8f";
-            ctx.beginPath(); ctx.arc(motoX + 45, 252, 6, 0, Math.PI*2); ctx.fill();
-        }
-
-        // Interfaz de botón para combustible
-        if (gameState === 'TANQUE') {
-            ctx.fillStyle = "#d9534f";
-            ctx.fillRect(fuelButton.x, fuelButton.y, fuelButton.w, fuelButton.h);
-            ctx.fillStyle = "white";
-            ctx.font = "14px Arial";
-            ctx.fillText("Llenar Tanque", fuelButton.x + 6, fuelButton.y + 24);
-        }
-
-        // Interfaz de botón para encender
-        if (gameState === 'ENCENDIDO' && messageTimer <= 0) {
-            ctx.fillStyle = "#5cb85c";
-            ctx.fillRect(350, 420, 100, 40);
-            ctx.fillStyle = "white";
-            ctx.font = "14px Arial";
-            ctx.fillText("ARRANCAR", 363, 444);
-        }
-    }
-
-    // FASE FINAL: Animación de escape y luz del amanecer
-    if (gameState === 'FINAL') {
-        if (messageTimer === 0) {
-            container.classList.remove("shake");
-            finalTimer++;
-            
-            // Entrada de luz del amanecer desde la derecha
-            let sunrise = Math.min(1, finalTimer / 200);
-            let gradient = ctx.createLinearGradient(400, 0, 800, 0);
-            gradient.addColorStop(0, "rgba(0,0,0,0)");
-            gradient.addColorStop(1, `rgba(253, 227, 167, ${sunrise})`);
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Mover la moto hacia la derecha (Carretera)
-            if (finalTimer > 60) {
-                motoX += 5;
-                activeMessage = '"Donde sea que te lleve el camino, ojalá nunca dejes de disfrutar el viaje."';
-            }
-
-            // Transición a créditos
-            if (motoX > canvas.width + 100) {
-                gameState = 'CREDITOS';
-                finalTimer = 0;
-            }
-        }
-    }
-
-    // PANTALLA DE CRÉDITOS
-    if (gameState === 'CREDITOS') {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "white";
-        ctx.font = "24px 'Courier New'";
-        ctx.textAlign = "center";
-        ctx.fillText("PROYECTO R6", canvas.width / 2, 200);
-        
-        ctx.font = "14px 'Courier New'";
-        ctx.fillStyle = "#888";
-        ctx.fillText("Una historia sobre el tiempo, los motores y los sueños.", canvas.width / 2, 250);
-        ctx.fillText("Gracias por jugar.", canvas.width / 2, 320);
-        
-        // Evitamos pintar otros mensajes
-        requestAnimationFrame(loop);
-        return;
-    }
-
-    // --- RENDER DE TEXTOS / DIÁLOGOS ---
-    if (activeMessage) {
-        ctx.fillStyle = "white";
-        ctx.font = "16px 'Courier New'";
-        ctx.textAlign = "center";
-        
-        // Efecto caja de texto inferior si es diálogo del juego
-        if (gameState !== 'INTRO_DARK' && gameState !== 'INTRO_TEXT') {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-            ctx.fillRect(50, 30, 700, 40);
-            ctx.fillStyle = "white";
-            ctx.fillText(activeMessage, canvas.width / 2, 55);
-        } else {
-            // Texto centrado en la intro oscura
-            ctx.fillText(activeMessage, canvas.width / 2, canvas.height / 2);
-        }
-    }
-
-    requestAnimationFrame(loop);
 }
 
-// Iniciar bucle
-loop();
 </script>
 
 </body>
