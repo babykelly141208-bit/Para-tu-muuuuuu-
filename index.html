@@ -123,14 +123,46 @@ Comenzar
 
 function comenzar(){
 
-document.getElementById("inicio").style.display="none";
-document.getElementById("taller").style.display="flex";
+document.getElementById("moto").onclick = function(){
 
-}
-    document.getElementById("moto").onclick = function(){
+let revision = document.createElement("div");
 
-alert("El motor está frío... pero todavía tiene una historia que contar. 🔧🏍️");
+revision.innerHTML = `
+<div style="
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#111;
+padding:30px;
+border:2px solid #777;
+border-radius:15px;
+text-align:center;
+width:300px;
+">
 
+<h2>Revisión de la moto</h2>
+
+<p>
+Estado actual:
+<br>
+🔴 Motor: dañado
+<br>
+🟡 Batería: baja
+<br>
+🟢 Chasis: estable
+</p>
+
+<button onclick="this.parentElement.parentElement.remove()">
+Cerrar
+</button>
+
+</div>
+`;
+
+document.getElementById("garaje").appendChild(revision);
+
+    }
     }
 
 </script>
